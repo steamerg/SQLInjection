@@ -1,44 +1,6 @@
-name: Akto Analysis
-
-on:
-  push:
-    branches:
-      - main  # Run on pushes to the main branch
-  pull_request:
-    branches:
-      - main  # Run on pull requests to the main branch
-
-jobs:
-  akto_analysis:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Helm
-        run: |
-          curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-      - name: Configure Kubernetes Cluster
-        # Ensure you configure access to your Kubernetes cluster where Akto is deployed.
-        # This step depends on how your cluster is set up.
-        # Example:
-        run: |
-          echo "$KUBECONFIG_CONTENT" | base64 --decode > $HOME/.kube/config
-        env:
-          KUBECONFIG_CONTENT: ${{ secrets.KUBECONFIG_CONTENT }}
-
-      - name: Install Akto Source Code Analyser
-        run: |
-          helm install source-code-analyser ~/akto_code/helm-charts/charts/source-code-analyser -n dev \
-            --set source_code_analyser.aktoApiSecurityCodeAnalyser.env.databaseAbstractorToken="${{ secrets.AKTO_ABSTRACTOR_TOKEN }}"
-        env:
-          AKTO_ABSTRACTOR_TOKEN: ${{ secrets.AKTO_ABSTRACTOR_TOKEN }}
-
-      - name: Run Akto Analysis
-        # Run Akto analysis or tests if there is a specific command to trigger the analysis
-        run: |
-          # Example: Invoke Akto's API or script to trigger the source code analysis
-          curl -X POST -H "Authorization: Bearer ${{ secrets.AKTO_API_TOKEN }}" \
-            https://akto.example.com/api/trigger-analysis
+- name: Akto code analysis
+  uses: akto-api-security/code-analysis-action@v1
+  with:
+    AKTO_DASHBOARD_URL: "https://app.akto.io/dashboard/quick-start"
+    AKTO_API_KEY: {{ secrets.AKTO_API_KEY }}
+    API_COLLECTION_NAME: SQLInjection
